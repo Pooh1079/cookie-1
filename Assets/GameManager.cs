@@ -1,70 +1,51 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance; // Ссылка на себя
+    public static GameManager instance;
+    public GameObject winScreen;
+    public GameObject loseScreen;
+    public int zombiesToKill = 10;
 
-    [Header("Настройки игры")]
-    public int zombiesToKill = 10; // Сколько зомби нужно убить для победы
-    private int zombiesKilled = 0;  // Счетчик убитых зомби
-
-    [Header("UI элементы")]
-    public GameObject winScreen;    // Экран победы
-    public GameObject loseScreen;   // Экран поражения
+    private int zombiesKilled = 0;
+    public bool isGameOver = false;
 
     void Awake()
     {
-        // Делаем менеджер доступным из любого скрипта
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject); // Не уничтожаем при загрузке новой сцены
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (instance == null) instance = this;
+        else Destroy(gameObject);
     }
 
-    // Вызывается при убийстве зомби
     public void ZombieKilled()
     {
         zombiesKilled++;
-
-        if (zombiesKilled >= zombiesToKill)
-        {
-            WinGame();
-        }
+        Debug.Log($"GameManager: ZombieKilled {zombiesKilled}/{zombiesToKill}");
+        if (zombiesKilled >= zombiesToKill) WinGame();
     }
 
-    // Вызывается при разрушении базы
     public void BaseDestroyed()
     {
-        LoseGame();
+        if (isGameOver) return;
+        isGameOver = true;
+        Debug.Log("GameManager: BaseDestroyed called");
+        if (loseScreen != null) loseScreen.SetActive(true);
+        else Debug.LogWarning("GameManager: loseScreen NOT assigned in Inspector!");
+        // show UI first, then stop time
+        Time.timeScale = 0f;
     }
 
     void WinGame()
     {
-        if (winScreen != null)
-        {
-            Instantiate(winScreen);
-        }
-        Time.timeScale = 0f; // Останавливаем игру
-    }
-
-    void LoseGame()
-    {
-        if (loseScreen != null)
-        {
-            Instantiate(loseScreen);
-        }
+        if (isGameOver) return;
+        isGameOver = true;
+        if (winScreen != null) winScreen.SetActive(true);
         Time.timeScale = 0f;
     }
 
-    // Для кнопки "В меню"
     public void ReturnToMenu()
     {
         Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("MainMenu");
     }
 }

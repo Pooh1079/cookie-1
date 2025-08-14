@@ -3,59 +3,58 @@ using UnityEngine;
 public class ZombieAI : MonoBehaviour
 {
     public float moveSpeed = 2f;
-    public int damagePerSecond = 10;
+    public int damagePerHit = 10;
     public float attackRate = 1f;
 
-    private Transform baseTransform;
-    private float nextAttackTime;
-    private bool isAttackingBase = false;
-
-    void Start()
-    {
-        baseTransform = GameObject.FindGameObjectWithTag("Base ").transform;
-    }
+    private BaseHealth targetBase;
+    private bool isAttacking = false;
 
     void Update()
     {
-        if (!isAttackingBase)
+        if (!isAttacking)
         {
-            MoveToBase();
+            if (targetBase == null)
+            {
+                GameObject b = GameObject.FindGameObjectWithTag("Base ");
+                if (b != null) targetBase = b.GetComponent<BaseHealth>();
+            }
+            if (targetBase != null)
+                transform.position = Vector2.MoveTowards(transform.position, targetBase.transform.position, moveSpeed * Time.deltaTime);
         }
-    }
-
-    void MoveToBase()
-    {
-        transform.position = Vector2.MoveTowards(
-            transform.position,
-            baseTransform.position,
-            moveSpeed * Time.deltaTime
-        );
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Base "))
         {
-            isAttackingBase = true;
-            InvokeRepeating("AttackBase", 0f, attackRate);
+            Debug.Log("ZombieAI: collided with Base");
+            targetBase = collision.gameObject.GetComponent<BaseHealth>();
+            if (targetBase != null)
+            {
+                isAttacking = true;
+                InvokeRepeating(nameof(AttackBase), 0f, attackRate);
+            }
         }
     }
 
     void AttackBase()
     {
-        BaseHealth baseHealth = baseTransform.GetComponent<BaseHealth>();
-        if (baseHealth != null)
+        if (targetBase == null)
         {
-            baseHealth.TakeDamage(damagePerSecond);
+            CancelInvoke(nameof(AttackBase));
+            isAttacking = false;
+            return;
         }
+        Debug.Log("ZombieAI: AttackBase()");
+        targetBase.TakeDamage(damagePerHit);
     }
 
     void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Base"))
         {
-            isAttackingBase = false;
-            CancelInvoke("AttackBase");
+            isAttacking = false;
+            CancelInvoke(nameof(AttackBase));
         }
     }
 }
