@@ -3,9 +3,20 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuController : MonoBehaviour
 {
+    // Нажатие кнопки Play в меню
     public void PlayGame()
     {
-        SceneManager.LoadScene("GameScene"); // Ваша игровая сцена
+        int lvl = PlayerPrefs.GetInt("currentLevel", 1); // по умолчанию Level1
+        string sceneName = "Level" + lvl;
+        Debug.Log("MainMenu: loading " + sceneName);
+        SceneManager.LoadScene(sceneName);
+    }
+
+    // Сброс прогресса (опционально)
+    public void ResetProgress()
+    {
+        PlayerPrefs.DeleteKey("currentLevel");
+        Debug.Log("MainMenu: progress reset");
     }
 
     public void QuitGame()
