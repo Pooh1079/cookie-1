@@ -4,12 +4,15 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+
+    [Header("Старт раунда")]
+    [Tooltip("Если true — зомби активны и будут ходить к базе")]
+    public bool roundStarted = false;
+    public GameObject startButton; // перетащить сюда кнопку Start из Canvas
+
+    [Header("UI (необязательно)")]
     public GameObject winScreen;
     public GameObject loseScreen;
-    public int zombiesToKill = 10;
-
-    private int zombiesKilled = 0;
-    public bool isGameOver = false;
 
     void Awake()
     {
@@ -17,35 +20,33 @@ public class GameManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    public void ZombieKilled()
+    void Start()
     {
-        zombiesKilled++;
-        Debug.Log($"GameManager: ZombieKilled {zombiesKilled}/{zombiesToKill}");
-        if (zombiesKilled >= zombiesToKill) WinGame();
+        Time.timeScale = 1f;
+        roundStarted = false;
+        if (startButton) startButton.SetActive(true);
     }
 
-    public void BaseDestroyed()
+    // Привязать к OnClick() кнопки Start
+    public void StartRound()
     {
-        if (isGameOver) return;
-        isGameOver = true;
-        Debug.Log("GameManager: BaseDestroyed called");
-        if (loseScreen != null) loseScreen.SetActive(true);
-        else Debug.LogWarning("GameManager: loseScreen NOT assigned in Inspector!");
-        // show UI first, then stop time
-        Time.timeScale = 0f;
-    }
-
-    void WinGame()
-    {
-        if (isGameOver) return;
-        isGameOver = true;
-        if (winScreen != null) winScreen.SetActive(true);
-        Time.timeScale = 0f;
+        if (roundStarted) return;
+        Debug.Log("GameManager: StartRound clicked");
+        roundStarted = true;
+        if (startButton) startButton.SetActive(false);
     }
 
     public void ReturnToMenu()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
+    }
+
+    // Эти методы оставляем, если уже используются в проекте
+    public void ZombieKilled() { /* ... */ }
+    public void BaseDestroyed()
+    {
+        if (loseScreen != null) loseScreen.SetActive(true);
+        Time.timeScale = 0f;
     }
 }
