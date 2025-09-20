@@ -160,7 +160,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Zombie big-3-Photoroom_0: -2409289572455590617
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

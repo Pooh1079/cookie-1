@@ -160,7 +160,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      crossbow-1-Photoroom_0: -4583362099289818530
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

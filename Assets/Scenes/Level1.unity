@@ -2082,7 +2082,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -12.49176, y: -10.917358}
+  m_AnchoredPosition: {x: -12.491699, y: -10.917358}
   m_SizeDelta: {x: -648.4431, y: -302.7797}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &636362319
@@ -3156,7 +3156,7 @@ MonoBehaviour:
   startButton: {fileID: 1150592270}
   levelNumber: 1
   maxLevels: 3
-  zombiesToKill: 10
+  zombiesToKill: 1
   winScreen: {fileID: 0}
   loseScreen: {fileID: 0}
 --- !u!1 &992774256
