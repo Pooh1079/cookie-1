@@ -1573,7 +1573,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -2.5825, y: -309.7282}
+  m_AnchoredPosition: {x: 0.000044346, y: -289}
   m_SizeDelta: {x: 446.1051, y: 196.0639}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &582128999
@@ -1785,7 +1785,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crossbowPrefab: {fileID: 4503433674393582890, guid: 18860cbb602fcdd42a0776a33cbe2f32, type: 3}
-  crossbowCost: 100
+  crossbowCost: 1
   buildMenuPanel: {fileID: 1086847181}
   buildCrossbowButton: {fileID: 857218570}
   cancelButton: {fileID: 1403507016}
@@ -4088,11 +4088,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 14
-    m_FontStyle: 0
+    m_FontSize: 52
+    m_FontStyle: 1
     m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_MinSize: 5
+    m_MaxSize: 52
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -5240,8 +5240,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0.002319336, y: 0.0049057007}
+  m_SizeDelta: {x: -0.003479, y: 0.0040588}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1862252328
 MonoBehaviour:

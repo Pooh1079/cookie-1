@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -15,6 +16,16 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
+        if (BuildManager.instance != null && BuildManager.instance.turretToBuild != null)
+        {
+            return;
+        }
         // При клике левой кнопкой мыши
         if (Input.GetMouseButtonDown(0))
         {
