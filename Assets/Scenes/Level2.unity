@@ -422,7 +422,7 @@ GameObject:
   - component: {fileID: 230964557}
   - component: {fileID: 230964556}
   - component: {fileID: 230964555}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CrossbowTower (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -596,7 +596,7 @@ GameObject:
   - component: {fileID: 266541652}
   - component: {fileID: 266541651}
   - component: {fileID: 266541650}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -936,7 +936,7 @@ GameObject:
   - component: {fileID: 271857886}
   - component: {fileID: 271857885}
   - component: {fileID: 271857884}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1148,7 +1148,7 @@ GameObject:
   m_Component:
   - component: {fileID: 392975224}
   - component: {fileID: 392975225}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: AttackRangeVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1339,7 +1339,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 416215104}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1553,7 +1553,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 484142078}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1585,7 +1585,7 @@ GameObject:
   m_Component:
   - component: {fileID: 502066966}
   - component: {fileID: 502066967}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: AttackRangeVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2136,7 +2136,7 @@ GameObject:
   - component: {fileID: 665766632}
   - component: {fileID: 665766631}
   - component: {fileID: 665766630}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2493,7 +2493,7 @@ GameObject:
   - component: {fileID: 712891921}
   - component: {fileID: 712891920}
   - component: {fileID: 712891919}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2664,7 +2664,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 770040847}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3144,6 +3144,7 @@ MonoBehaviour:
   zombiesToKill: 1
   winScreen: {fileID: 121083714}
   loseScreen: {fileID: 636362317}
+  money: 200
 --- !u!4 &967725750
 Transform:
   m_ObjectHideFlags: 0
@@ -3168,7 +3169,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 992774257}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3738,7 +3739,7 @@ GameObject:
   - component: {fileID: 1364554203}
   - component: {fileID: 1364554202}
   - component: {fileID: 1364554201}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3913,7 +3914,7 @@ GameObject:
   - component: {fileID: 1545441038}
   - component: {fileID: 1545441037}
   - component: {fileID: 1545441036}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CrossbowTower (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4162,7 +4163,7 @@ GameObject:
   - component: {fileID: 1684829475}
   - component: {fileID: 1684829474}
   - component: {fileID: 1684829473}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CrossbowTower (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4336,7 +4337,7 @@ GameObject:
   - component: {fileID: 1700730026}
   - component: {fileID: 1700730025}
   - component: {fileID: 1700730024}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CrossbowTower (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4953,7 +4954,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1874746590}
   - component: {fileID: 1874746591}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: AttackRangeVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5040,7 +5041,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2060908279}
   - component: {fileID: 2060908280}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: AttackRangeVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

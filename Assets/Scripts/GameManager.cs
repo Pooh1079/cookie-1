@@ -22,6 +22,8 @@ public class GameManager : MonoBehaviour
     public GameObject winScreen; // по желанию
     public GameObject loseScreen;
 
+    public int money = 200;
+
     void Awake()
     {
         if (instance == null) instance = this;
