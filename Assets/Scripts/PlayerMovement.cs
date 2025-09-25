@@ -6,46 +6,37 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f;
     private Vector2 targetPosition;
     private bool isMoving;
-    public GameObject moveIndicator; // Префаб индикатора перемещения
-
-    void Start()
-    {
-        targetPosition = transform.position;
-        isMoving = false;
-    }
+    public GameObject moveIndicator;
 
     void Update()
     {
-
+        // ПРОВЕРКА 1: Наведен ли курсор на UI элемент?
         if (EventSystem.current.IsPointerOverGameObject())
         {
             return;
         }
 
-        if (BuildManager.instance != null && BuildManager.instance.turretToBuild != null)
+        // ПРОВЕРКА 2: Активен ли режим строительства? (ИСПРАВЛЕННАЯ СТРОКА)
+        if (BuildManager.instance != null && BuildManager.instance.selectedTurret != null)
         {
             return;
         }
-        // При клике левой кнопкой мыши
+
+        // Обработка клика для перемещения
         if (Input.GetMouseButtonDown(0))
         {
-            // Получаем позицию клика в мировых координатах
             targetPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             isMoving = true;
 
-            // Создаем индикатор перемещения
             if (moveIndicator != null)
             {
                 Instantiate(moveIndicator, targetPosition, Quaternion.identity);
             }
         }
 
-        // Перемещаем персонажа к цели
         if (isMoving)
         {
             transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-
-            // Если персонаж достиг цели, останавливаемся
             if ((Vector2)transform.position == targetPosition)
             {
                 isMoving = false;

@@ -1,30 +1,33 @@
 using UnityEngine;
-using UnityEngine.UI; // Важно для работы с UI элементами
+using UnityEngine.UI;
 
 public class BuildManager : MonoBehaviour
 {
     public static BuildManager instance;
 
-    [Header("Префабы турелей")]
-    public GameObject crossbowPrefab; // Перетащите сюда префаб Prefab_Crossbow
+    [System.Serializable]
+    public class TurretBlueprint
+    {
+        public string name;
+        public GameObject prefab;
+        public int cost;
+        public Button buildButton;
+    }
 
-    [Header("Стоимость турелей")]
-    public int crossbowCost = 100;
+    [Header("Список доступных турелей")]
+    public TurretBlueprint[] turrets;
 
     [Header("Ссылки на UI")]
-    public GameObject buildMenuPanel; // Панель с выбором турели
-    public Button buildCrossbowButton; // Конкретная кнопка "Построить Арбалет"
-    public Button cancelButton; // Кнопка отмены
-    public Button buildModeButton; // Главная кнопка "Build"
+    public GameObject buildMenuPanel;
+    public Button cancelButton;
+    public Button buildModeButton;
 
-    // Какая турель выбрана для постройки?
-    public GameObject turretToBuild;
-    // Достаточно ли денег?
-    private bool hasEnoughMoney = false;
+    // Сделаем public для отладки
+    [Header("Debug - Текущая турель")]
+    public TurretBlueprint selectedTurret;
 
     void Awake()
     {
-        // Делаем менеджер одиночкой (Singleton)
         if (instance != null)
         {
             Debug.LogError("Больше одного BuildManager на сцене!");
@@ -35,107 +38,92 @@ public class BuildManager : MonoBehaviour
 
     void Start()
     {
-        // Обновляем интерфейс при старте
-        UpdateUI();
+        Debug.Log("=== START ===");
+        Debug.Log("turrets.Length: " + turrets.Length);
+        Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
 
-        // Сразу скрываем меню выбора турелей
-        if (buildMenuPanel != null)
-            buildMenuPanel.SetActive(false);
-
-        // Делаем кнопку отмены неактивной
-        if (cancelButton != null)
-            cancelButton.gameObject.SetActive(false);
+        buildMenuPanel.SetActive(false);
+        cancelButton.gameObject.SetActive(false);
     }
 
     void Update()
     {
-        // Постоянно проверяем, хватает ли денег на выбранную турель
-        // (Здесь предполагается, что у GameManager есть переменная 'money')
-         hasEnoughMoney = (GameManager.instance.money >= crossbowCost);
-
-        // Если турель выбрана и мы в режиме строительства, можно добавить визуальный индикатор
-        // (например, полупрозрачный призрак турели, следующий за курсором)
-        if (turretToBuild != null)
+        // Отладочная информация каждый кадр (временно)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            // Логика отображения "призрака" турели
-        }
-
-        // Обработка отмены строительства по правой кнопке мыши или ESC
-        if (turretToBuild != null && (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)))
-        {
-            CancelTurretSelection();
+            Debug.Log("=== DEBUG INFO ===");
+            Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
+            Debug.Log("turrets count: " + turrets.Length);
+            Debug.Log("buildMenuPanel active: " + buildMenuPanel.activeSelf);
         }
     }
 
-    // Вызывается по клику на главную кнопку "Build"
     public void ToggleBuildMenu()
     {
-        // Включаем или выключаем меню выбора турелей
+        Debug.Log("=== TOGGLE BUILD MENU ===");
+        Debug.Log("До открытия - selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
+
+        // СБРАСЫВАЕМ ВСЕГДА при открытии/закрытии меню
+        selectedTurret = null;
+
         bool isMenuActive = buildMenuPanel.activeSelf;
         buildMenuPanel.SetActive(!isMenuActive);
 
-        // Если мы открыли меню, выходим из режима строительства
-        if (!isMenuActive && turretToBuild != null)
-        {
-            CancelTurretSelection();
-        }
+        Debug.Log("После открытия - selectedTurret: " + (selectedTurret == null ? "null" : "NOT NULL"));
+        Debug.Log("Меню теперь: " + (!isMenuActive ? "открыто" : "закрыто"));
     }
 
-    // Вызывается по клику на кнопку "Построить Арбалет"
-    public void SelectTurretToBuild()
+    public void SelectTurret(int turretIndex)
     {
-        // 1. Проверить деньги (if (!hasEnoughMoney) return;)
-        // 2. Выбрать турель
-        turretToBuild = crossbowPrefab;
-        Debug.Log("Выбрана турель для постройки: " + turretToBuild.name);
+        Debug.Log("=== SELECT TURRET ===");
+        Debug.Log("Индекс: " + turretIndex);
+        Debug.Log("Размер массива: " + turrets.Length);
 
-        // 3. Закрыть меню выбора
+        if (turretIndex < 0 || turretIndex >= turrets.Length)
+        {
+            Debug.LogError("Неверный индекс турели!");
+            return;
+        }
+
+        selectedTurret = turrets[turretIndex];
+        Debug.Log("Выбрана турель: " + (selectedTurret == null ? "null" : selectedTurret.name));
+
         buildMenuPanel.SetActive(false);
-
-        // 4. Активировать кнопку отмены
         cancelButton.gameObject.SetActive(true);
-
-        // 5. Здесь можно включить визуальный индикатор (призрак турели)
     }
 
-    // Вызывается по клику на кнопку "Cancel" или правой кнопкой мыши
     public void CancelTurretSelection()
     {
-        turretToBuild = null;
-        Debug.Log("Режим строительства отменен.");
+        Debug.Log("=== CANCEL SELECTION ===");
+        Debug.Log("До отмены - selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
 
-        // Деактивируем кнопку отмены
+        selectedTurret = null;
+
         cancelButton.gameObject.SetActive(false);
 
-        // Скрываем визуальный индикатор
+        Debug.Log("После отмены - selectedTurret: " + (selectedTurret == null ? "null" : "NOT NULL"));
     }
 
-    // Этот метод будет вызываться из другого скрипта при клике на землю
     public void BuildTurretOn(Vector3 buildPosition)
     {
-        // Если ничего не выбрано для строительства - выходим
-        if (turretToBuild == null)
+        Debug.Log("=== BUILD TURRET ===");
+        Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
+
+        if (selectedTurret == null)
+        {
+            Debug.LogError("selectedTurret is NULL!");
             return;
+        }
 
-        // Проверяем деньги еще раз (if (GameManager.instance.money < crossbowCost) return;)
+        if (selectedTurret.prefab == null)
+        {
+            Debug.LogError("Prefab is NULL for turret: " + (selectedTurret.name ?? "NO NAME"));
+            return;
+        }
 
-        // Создаем турель на сцене
-        GameObject newTurret = Instantiate(turretToBuild, buildPosition, Quaternion.identity);
+        GameObject newTurret = Instantiate(selectedTurret.prefab, buildPosition, Quaternion.identity);
         Debug.Log("Турель построена!");
 
-        // Вычитаем деньги (GameManager.instance.money -= crossbowCost;)
-        GameManager.instance.money -= crossbowCost;
-        // Обновляем UI
-        UpdateUI();
-
-        // Выходим из режима строительства
         CancelTurretSelection();
-    }
-
-    void UpdateUI()
-    {
-        // Обновляем текст кнопок, их доступность и т.д.
-        hasEnoughMoney = (GameManager.instance.money >= crossbowCost);
-        buildCrossbowButton.interactable = hasEnoughMoney;
     }
 }
