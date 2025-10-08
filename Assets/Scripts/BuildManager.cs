@@ -42,8 +42,31 @@ public class BuildManager : MonoBehaviour
         Debug.Log("turrets.Length: " + turrets.Length);
         Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
 
+        // ИНИЦИАЛИЗАЦИЯ КНОПОК - ВАЖНО!
+        InitializeBuildButtons();
+
         buildMenuPanel.SetActive(false);
         cancelButton.gameObject.SetActive(false);
+    }
+
+    // НОВЫЙ МЕТОД: Инициализация кнопок строительства
+    void InitializeBuildButtons()
+    {
+        for (int i = 0; i < turrets.Length; i++)
+        {
+            int index = i; // Важно: создаем локальную копию для замыкания
+            if (turrets[i].buildButton != null)
+            {
+                // Убираем старые обработчики и добавляем новый
+                turrets[i].buildButton.onClick.RemoveAllListeners();
+                turrets[i].buildButton.onClick.AddListener(() => SelectTurret(index));
+                Debug.Log($"Кнопка инициализирована для турели: {turrets[i].name}, индекс: {index}");
+            }
+            else
+            {
+                Debug.LogWarning($"У турели {turrets[i].name} нет кнопки buildButton!");
+            }
+        }
     }
 
     void Update()
@@ -69,6 +92,16 @@ public class BuildManager : MonoBehaviour
         bool isMenuActive = buildMenuPanel.activeSelf;
         buildMenuPanel.SetActive(!isMenuActive);
 
+        // Скрываем кнопку отмены при открытии/закрытии меню
+        cancelButton.gameObject.SetActive(false);
+
+        // ПРОВЕРКА: убедимся что selectedTurret остался null
+        if (selectedTurret != null)
+        {
+            Debug.LogError("ОШИБКА: selectedTurret стал не-null после сброса! Это: " + selectedTurret.name);
+            selectedTurret = null; // Принудительно сбрасываем
+        }
+
         Debug.Log("После открытия - selectedTurret: " + (selectedTurret == null ? "null" : "NOT NULL"));
         Debug.Log("Меню теперь: " + (!isMenuActive ? "открыто" : "закрыто"));
     }
@@ -86,7 +119,16 @@ public class BuildManager : MonoBehaviour
         }
 
         selectedTurret = turrets[turretIndex];
-        Debug.Log("Выбрана турель: " + (selectedTurret == null ? "null" : selectedTurret.name));
+
+        // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ПРЕФАБА
+        if (selectedTurret.prefab == null)
+        {
+            Debug.LogError($"У турели '{selectedTurret.name}' отсутствует префаб!");
+            selectedTurret = null;
+            return;
+        }
+
+        Debug.Log("Выбрана турель: " + selectedTurret.name + " (префаб: " + (selectedTurret.prefab != null ? "есть" : "отсутствует") + ")");
 
         buildMenuPanel.SetActive(false);
         cancelButton.gameObject.SetActive(true);
@@ -98,7 +140,6 @@ public class BuildManager : MonoBehaviour
         Debug.Log("До отмены - selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
 
         selectedTurret = null;
-
         cancelButton.gameObject.SetActive(false);
 
         Debug.Log("После отмены - selectedTurret: " + (selectedTurret == null ? "null" : "NOT NULL"));
@@ -121,8 +162,23 @@ public class BuildManager : MonoBehaviour
             return;
         }
 
+        // ПРОВЕРКА ДЕНЕГ
+        if (GameManager.instance != null && GameManager.instance.money < selectedTurret.cost)
+        {
+            Debug.Log("Недостаточно денег для строительства!");
+            CancelTurretSelection();
+            return;
+        }
+
         GameObject newTurret = Instantiate(selectedTurret.prefab, buildPosition, Quaternion.identity);
         Debug.Log("Турель построена!");
+
+        // СПИСАНИЕ ДЕНЕГ
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.money -= selectedTurret.cost;
+            Debug.Log($"Списано {selectedTurret.cost} денег. Осталось: {GameManager.instance.money}");
+        }
 
         CancelTurretSelection();
     }
