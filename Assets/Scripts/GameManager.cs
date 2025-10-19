@@ -65,14 +65,16 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         Debug.Log("GameManager: WinGame for level " + levelNumber);
 
-        // сохраним прогресс: следующий уровень (если он есть)
+        if (FameManager.instance != null)
+            FameManager.instance.AddXP(10); // +10 XP за победу
+
         int nextLevel = Mathf.Clamp(levelNumber + 1, 1, maxLevels);
         PlayerPrefs.SetInt("currentLevel", nextLevel);
         PlayerPrefs.Save();
-        Debug.Log("MainMenu: next saved level = " + nextLevel);
 
         if (winScreen != null) winScreen.SetActive(true);
         Time.timeScale = 0f;
+        Debug.Log("XP добавлен!");
     }
 
     public void BaseDestroyed()

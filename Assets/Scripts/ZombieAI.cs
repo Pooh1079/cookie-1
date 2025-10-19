@@ -40,7 +40,7 @@ public class ZombieAI : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!collision.gameObject.CompareTag("Base")) return;
+        if (!collision.gameObject.CompareTag("Base ")) return;
 
         baseHealth = collision.gameObject.GetComponent<BaseHealth>();
         baseTransform = collision.transform;
@@ -62,7 +62,7 @@ public class ZombieAI : MonoBehaviour
 
     void OnCollisionExit2D(Collision2D collision)
     {
-        if (!collision.gameObject.CompareTag("Base")) return;
+        if (!collision.gameObject.CompareTag("Base ")) return;
         isAttacking = false;
         CancelInvoke(nameof(AttackBase));
     }
@@ -83,6 +83,7 @@ public class ZombieAI : MonoBehaviour
             isAttacking = false;
             return;
         }
+
         baseHealth.TakeDamage(damagePerHit);
         Debug.Log(name + $": attacked base for {damagePerHit}");
     }

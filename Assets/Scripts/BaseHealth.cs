@@ -3,112 +3,65 @@ using UnityEngine.UI;
 
 public class BaseHealth : MonoBehaviour
 {
+    [Header("Настройки здоровья")]
     public int maxHealth = 100;
-    private int currentHealth;
-    public Slider healthSlider; // Должен быть UI Slider на Canvas (НЕ дочерний элемент базы)
-    public GameObject visualsRoot; // (опционально) объект с визуалом базы, чтобы скрыть при смерти
-    public Collider2D hitCollider; // (опционально) ссылка на коллайдер базы
+    public int currentHealth;
+
+    [Header("UI")]
+    public Text baseHealthText; // Сюда перетащи объект UI Text
 
     void Start()
     {
         currentHealth = maxHealth;
-        if (healthSlider != null)
+        UpdateHealthText();
+    }
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+        if (currentHealth < 0) currentHealth = 0;
+
+        Debug.Log("База получила урон! Текущее HP: " + currentHealth);
+
+        UpdateHealthText();
+
+        if (currentHealth <= 0)
         {
-            healthSlider.maxValue = maxHealth;
-            healthSlider.value = currentHealth;
+            if (GameManager.instance != null)
+                GameManager.instance.BaseDestroyed();
         }
     }
 
-    public void TakeDamage(int amount)
+    void UpdateHealthText()
     {
-        currentHealth -= amount;
-        Debug.Log($"BaseHealth.TakeDamage({amount}) => {currentHealth}");
-        if (healthSlider != null)
-            healthSlider.value = Mathf.Clamp(currentHealth, 0, maxHealth);
+        if (baseHealthText == null)
+        {
+            Debug.LogWarning("BaseHealthText не назначен в инспекторе!");
+            return;
+        }
 
-        if (currentHealth <= 0)
-            Die();
-    }
+        // Обновляем сам текст
+        baseHealthText.text = "HP: " + currentHealth;
 
-    void Die()
-    {
-        Debug.Log("BaseHealth.Die() called");
-        if (GameManager.instance != null)
-            GameManager.instance.BaseDestroyed();
+        // Определяем процент оставшегося здоровья (0–1)
+        float healthPercent = (float)currentHealth / maxHealth;
 
-        // Отключаем визуалы и коллайдер, но НЕ уничтожаем слайдер (он на Canvas)
-        if (visualsRoot != null) visualsRoot.SetActive(false);
-        if (hitCollider != null) hitCollider.enabled = false;
+        // Зелёный при 100%, жёлтый при 50%, красный при 0%
+        Color healthColor;
+        if (healthPercent > 0.5f)
+        {
+            // от зелёного к жёлтому
+            float t = (healthPercent - 0.5f) / 0.5f;
+            healthColor = Color.Lerp(Color.yellow, Color.green, t);
+        }
+        else
+        {
+            // от жёлтого к красному
+            float t = healthPercent / 0.5f;
+            healthColor = Color.Lerp(Color.red, Color.yellow, t);
+        }
 
-        // Отключаем этот скрипт, чтобы зомби перестали его вызывать
-        enabled = false;
-
-        // Не делаем Destroy(gameObject) здесь — так меньше рисков, что ссылки на UI исчезнут
+        // Применяем цвет к тексту
+        baseHealthText.color = healthColor;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
