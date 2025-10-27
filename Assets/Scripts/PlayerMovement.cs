@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class PlayerMovement : MonoBehaviour
@@ -7,40 +7,47 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 targetPosition;
     private bool isMoving;
     public GameObject moveIndicator;
+    private SpriteRenderer sr;
+
+    void Start()
+    {
+        targetPosition = transform.position;
+        sr = GetComponent<SpriteRenderer>();
+    }
 
     void Update()
     {
-        // ÏÐÎÂÅÐÊÀ 1: Íàâåäåí ëè êóðñîð íà UI ýëåìåíò?
-        if (EventSystem.current.IsPointerOverGameObject())
-        {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
-        }
 
-        // ÏÐÎÂÅÐÊÀ 2: Àêòèâåí ëè ðåæèì ñòðîèòåëüñòâà? (ÈÑÏÐÀÂËÅÍÍÀß ÑÒÐÎÊÀ)
-        if (BuildManager.instance != null && BuildManager.instance.selectedTurret != null)
-        {
+        // Ð±Ð»Ð¾ÐºÐ¸Ñ€ÑƒÐµÐ¼ Ð´Ð²Ð¸Ð¶ÐµÐ½Ð¸Ðµ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ ÐµÑÐ»Ð¸ Ð¸Ð³Ñ€Ð¾Ðº Ñ€ÐµÐ°Ð»ÑŒÐ½Ð¾ ÑÑ‚Ñ€Ð¾Ð¸Ñ‚
+        if (BuildManager.instance != null && BuildManager.instance.isBuilding)
             return;
-        }
 
-        // Îáðàáîòêà êëèêà äëÿ ïåðåìåùåíèÿ
         if (Input.GetMouseButtonDown(0))
         {
-            targetPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 clickPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            targetPosition = new Vector2(clickPos.x, clickPos.y);
             isMoving = true;
 
             if (moveIndicator != null)
-            {
                 Instantiate(moveIndicator, targetPosition, Quaternion.identity);
-            }
         }
 
         if (isMoving)
         {
             transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-            if ((Vector2)transform.position == targetPosition)
+
+            Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
+            if (sr != null)
             {
-                isMoving = false;
+                if (direction.x > 0.05f) sr.flipX = false;
+                else if (direction.x < -0.05f) sr.flipX = true;
             }
+
+            if (Vector2.Distance(transform.position, targetPosition) < 0.05f)
+                isMoving = false;
         }
     }
 }
+

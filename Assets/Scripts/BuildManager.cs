@@ -1,5 +1,6 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class BuildManager : MonoBehaviour
 {
@@ -14,23 +15,29 @@ public class BuildManager : MonoBehaviour
         public Button buildButton;
     }
 
-    [Header("Список доступных турелей")]
+    [Header("РЎРїРёСЃРѕРє РґРѕСЃС‚СѓРїРЅС‹С… С‚СѓСЂРµР»РµР№")]
     public TurretBlueprint[] turrets;
 
-    [Header("Ссылки на UI")]
+    [Header("РЎСЃС‹Р»РєРё РЅР° UI")]
     public GameObject buildMenuPanel;
     public Button cancelButton;
     public Button buildModeButton;
+    public Text moneyText; // рџ’° РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РґРµРЅРµРі
+    public Text warningText; // вљ пёЏ РЎРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ ("РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґРµРЅРµРі")
 
-    // Сделаем public для отладки
-    [Header("Debug - Текущая турель")]
+    [Header("Debug - РўРµРєСѓС‰Р°СЏ С‚СѓСЂРµР»СЊ")]
     public TurretBlueprint selectedTurret;
+
+    [Header("Р РµР¶РёРј СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР°")]
+    public bool isBuilding = false; // Р¤Р»Р°Рі: Р°РєС‚РёРІРµРЅ Р»Рё СЂРµР¶РёРј СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР°
+
+    private int lastMoney = -1;
 
     void Awake()
     {
         if (instance != null)
         {
-            Debug.LogError("Больше одного BuildManager на сцене!");
+            Debug.LogError("Р‘РѕР»СЊС€Рµ РѕРґРЅРѕРіРѕ BuildManager РЅР° СЃС†РµРЅРµ!");
             return;
         }
         instance = this;
@@ -38,148 +45,155 @@ public class BuildManager : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("=== START ===");
-        Debug.Log("turrets.Length: " + turrets.Length);
-        Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
-
-        // ИНИЦИАЛИЗАЦИЯ КНОПОК - ВАЖНО!
         InitializeBuildButtons();
 
         buildMenuPanel.SetActive(false);
         cancelButton.gameObject.SetActive(false);
-    }
+        isBuilding = false;
 
-    // НОВЫЙ МЕТОД: Инициализация кнопок строительства
-    void InitializeBuildButtons()
-    {
-        for (int i = 0; i < turrets.Length; i++)
-        {
-            int index = i; // Важно: создаем локальную копию для замыкания
-            if (turrets[i].buildButton != null)
-            {
-                // Убираем старые обработчики и добавляем новый
-                turrets[i].buildButton.onClick.RemoveAllListeners();
-                turrets[i].buildButton.onClick.AddListener(() => SelectTurret(index));
-                Debug.Log($"Кнопка инициализирована для турели: {turrets[i].name}, индекс: {index}");
-            }
-            else
-            {
-                Debug.LogWarning($"У турели {turrets[i].name} нет кнопки buildButton!");
-            }
-        }
+        // рџ’° РџСЂСЏС‡РµРј РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ РїСЂРё СЃС‚Р°СЂС‚Рµ
+        if (warningText != null)
+            warningText.gameObject.SetActive(false);
+
+        UpdateMoneyUI(true);
     }
 
     void Update()
     {
-        // Отладочная информация каждый кадр (временно)
-        if (Input.GetKeyDown(KeyCode.Space))
+        // рџ’° РѕР±РЅРѕРІР»СЏРµРј РґРµРЅСЊРіРё С‚РѕР»СЊРєРѕ РµСЃР»Рё РёР·РјРµРЅРёР»РёСЃСЊ
+        UpdateMoneyUI(false);
+    }
+
+    // =====================================================
+    // ===  UI: Р”РµРЅСЊРіРё ====================================
+    // =====================================================
+    void UpdateMoneyUI(bool force)
+    {
+        if (GameManager.instance == null || moneyText == null)
+            return;
+
+        int currentMoney = GameManager.instance.money;
+        if (currentMoney != lastMoney || force)
         {
-            Debug.Log("=== DEBUG INFO ===");
-            Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
-            Debug.Log("turrets count: " + turrets.Length);
-            Debug.Log("buildMenuPanel active: " + buildMenuPanel.activeSelf);
+            lastMoney = currentMoney;
+            moneyText.text = $"рџ’µ Р”РµРЅСЊРіРё: {currentMoney}";
+        }
+    }
+
+    IEnumerator ShowWarning(string text)
+    {
+        if (warningText == null) yield break;
+
+        warningText.text = text;
+        warningText.color = new Color(1, 0.2f, 0.2f, 1f); // РєСЂР°СЃРЅС‹Р№ С†РІРµС‚
+        warningText.gameObject.SetActive(true);
+
+        // РџР»Р°РІРЅРѕРµ РёСЃС‡РµР·РЅРѕРІРµРЅРёРµ
+        float duration = 2f;
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            Color c = warningText.color;
+            c.a = Mathf.Lerp(1f, 0f, timer / duration);
+            warningText.color = c;
+            yield return null;
+        }
+
+        warningText.gameObject.SetActive(false);
+    }
+
+    // =====================================================
+    // ===  РљРќРћРџРљР РЎРўР РћРРўР•Р›Р¬РЎРўР’Рђ ==========================
+    // =====================================================
+    void InitializeBuildButtons()
+    {
+        for (int i = 0; i < turrets.Length; i++)
+        {
+            int index = i;
+            if (turrets[i].buildButton != null)
+            {
+                turrets[i].buildButton.onClick.RemoveAllListeners();
+                turrets[i].buildButton.onClick.AddListener(() => SelectTurret(index));
+            }
+            else
+            {
+                Debug.LogWarning($"РЈ С‚СѓСЂРµР»Рё {turrets[i].name} РЅРµС‚ РєРЅРѕРїРєРё buildButton!");
+            }
         }
     }
 
     public void ToggleBuildMenu()
     {
-        Debug.Log("=== TOGGLE BUILD MENU ===");
-        Debug.Log("До открытия - selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
-
-        // СБРАСЫВАЕМ ВСЕГДА при открытии/закрытии меню
         selectedTurret = null;
-
+        isBuilding = false;
         bool isMenuActive = buildMenuPanel.activeSelf;
         buildMenuPanel.SetActive(!isMenuActive);
-
-        // Скрываем кнопку отмены при открытии/закрытии меню
         cancelButton.gameObject.SetActive(false);
-
-        // ПРОВЕРКА: убедимся что selectedTurret остался null
-        if (selectedTurret != null)
-        {
-            Debug.LogError("ОШИБКА: selectedTurret стал не-null после сброса! Это: " + selectedTurret.name);
-            selectedTurret = null; // Принудительно сбрасываем
-        }
-
-        Debug.Log("После открытия - selectedTurret: " + (selectedTurret == null ? "null" : "NOT NULL"));
-        Debug.Log("Меню теперь: " + (!isMenuActive ? "открыто" : "закрыто"));
     }
 
     public void SelectTurret(int turretIndex)
     {
-        Debug.Log("=== SELECT TURRET ===");
-        Debug.Log("Индекс: " + turretIndex);
-        Debug.Log("Размер массива: " + turrets.Length);
-
         if (turretIndex < 0 || turretIndex >= turrets.Length)
         {
-            Debug.LogError("Неверный индекс турели!");
+            Debug.LogError("РќРµРІРµСЂРЅС‹Р№ РёРЅРґРµРєСЃ С‚СѓСЂРµР»Рё!");
             return;
         }
 
         selectedTurret = turrets[turretIndex];
 
-        // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ПРЕФАБА
         if (selectedTurret.prefab == null)
         {
-            Debug.LogError($"У турели '{selectedTurret.name}' отсутствует префаб!");
+            Debug.LogError($"РЈ С‚СѓСЂРµР»Рё '{selectedTurret.name}' РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РїСЂРµС„Р°Р±!");
             selectedTurret = null;
             return;
         }
 
-        Debug.Log("Выбрана турель: " + selectedTurret.name + " (префаб: " + (selectedTurret.prefab != null ? "есть" : "отсутствует") + ")");
-
         buildMenuPanel.SetActive(false);
         cancelButton.gameObject.SetActive(true);
+
+        isBuilding = true;
+        Debug.Log($"Р’С‹Р±СЂР°РЅР° С‚СѓСЂРµР»СЊ: {selectedTurret.name}, СЂРµР¶РёРј СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР° РІРєР»СЋС‡С‘РЅ");
     }
 
     public void CancelTurretSelection()
     {
-        Debug.Log("=== CANCEL SELECTION ===");
-        Debug.Log("До отмены - selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
-
         selectedTurret = null;
+        isBuilding = false;
         cancelButton.gameObject.SetActive(false);
-
-        Debug.Log("После отмены - selectedTurret: " + (selectedTurret == null ? "null" : "NOT NULL"));
+        Debug.Log("Р РµР¶РёРј СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР° РѕС‚РјРµРЅС‘РЅ");
     }
 
+    // =====================================================
+    // ===  РџРћРЎРўР РћР™РљРђ РўРЈР Р•Р›Р ==============================
+    // =====================================================
     public void BuildTurretOn(Vector3 buildPosition)
     {
-        Debug.Log("=== BUILD TURRET ===");
-        Debug.Log("selectedTurret: " + (selectedTurret == null ? "null" : selectedTurret.name));
-
-        if (selectedTurret == null)
+        if (selectedTurret == null || selectedTurret.prefab == null)
         {
-            Debug.LogError("selectedTurret is NULL!");
+            Debug.LogError("РќРµ РІС‹Р±СЂР°РЅР° С‚СѓСЂРµР»СЊ РёР»Рё РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РїСЂРµС„Р°Р±!");
             return;
         }
 
-        if (selectedTurret.prefab == null)
-        {
-            Debug.LogError("Prefab is NULL for turret: " + (selectedTurret.name ?? "NO NAME"));
-            return;
-        }
-
-        // ПРОВЕРКА ДЕНЕГ
         if (GameManager.instance != null && GameManager.instance.money < selectedTurret.cost)
         {
-            Debug.Log("Недостаточно денег для строительства!");
+            Debug.Log("РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґРµРЅРµРі РґР»СЏ СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР°!");
+            StartCoroutine(ShowWarning("РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґРµРЅРµРі!"));
             CancelTurretSelection();
             return;
         }
 
         GameObject newTurret = Instantiate(selectedTurret.prefab, buildPosition, Quaternion.identity);
-        Debug.Log("Турель построена!");
+        Debug.Log($"РўСѓСЂРµР»СЊ '{selectedTurret.name}' РїРѕСЃС‚СЂРѕРµРЅР°!");
 
-        // СПИСАНИЕ ДЕНЕГ
         if (GameManager.instance != null)
         {
             GameManager.instance.money -= selectedTurret.cost;
-            Debug.Log($"Списано {selectedTurret.cost} денег. Осталось: {GameManager.instance.money}");
+            UpdateMoneyUI(true);
+            Debug.Log($"РЎРїРёСЃР°РЅРѕ {selectedTurret.cost} РґРµРЅРµРі. РћСЃС‚Р°Р»РѕСЃСЊ: {GameManager.instance.money}");
         }
 
         CancelTurretSelection();
     }
 }
+
