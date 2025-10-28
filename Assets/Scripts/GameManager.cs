@@ -1,17 +1,16 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    [Header("Старт раунда")]
-    [Tooltip("Если true — зомби активны и будут ходить к базе")]
+    [Header("РЎС‚Р°СЂС‚ СЂР°СѓРЅРґР°")]
     public bool roundStarted = false;
-    public GameObject startButton; // перетащить сюда кнопку Start из Canvas
+    public GameObject startButton;
 
     [Header("Level")]
-    public int levelNumber = 1;     // выставь в Inspector: 1 для Level1, 2 для Level2, 3 для Level3
+    public int levelNumber = 1;
     public int maxLevels = 3;
 
     [Header("Win/Lose")]
@@ -19,9 +18,10 @@ public class GameManager : MonoBehaviour
     private int zombiesKilled = 0;
     private bool isGameOver = false;
 
-    public GameObject winScreen; // по желанию
+    public GameObject winScreen;
     public GameObject loseScreen;
 
+    [Header("Р”РµРЅСЊРіРё РёРіСЂРѕРєР°")]
     public int money = 200;
 
     void Awake()
@@ -42,11 +42,9 @@ public class GameManager : MonoBehaviour
         if (loseScreen) loseScreen.SetActive(false);
     }
 
-    // Привязать к OnClick() кнопки Start
     public void StartRound()
     {
         if (roundStarted || isGameOver) return;
-        Debug.Log("GameManager: StartRound clicked");
         roundStarted = true;
         if (startButton) startButton.SetActive(false);
     }
@@ -55,18 +53,32 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver || !roundStarted) return;
         zombiesKilled++;
-        Debug.Log($"GameManager: ZombieKilled {zombiesKilled}/{zombiesToKill}");
-        if (zombiesKilled >= zombiesToKill) WinGame();
+        if (zombiesKilled >= zombiesToKill)
+            WinGame();
     }
 
     void WinGame()
     {
         if (isGameOver) return;
         isGameOver = true;
-        Debug.Log("GameManager: WinGame for level " + levelNumber);
 
-        if (FameManager.instance != null)
-            FameManager.instance.AddXP(10); // +10 XP за победу
+        // рџЋ– Р”РѕР±Р°РІР»СЏРµРј XP Р·Р° РїРѕР±РµРґСѓ С‡РµСЂРµР· PlayerPrefs
+        int xp = PlayerPrefs.GetInt("FameXP", 0);
+        int lvl = PlayerPrefs.GetInt("FameLevel", 1);
+
+        int xpToNext = lvl == 1 ? 30 : (lvl == 2 ? 40 : 50);
+
+        xp += 10;
+        if (xp >= xpToNext)
+        {
+            xp -= xpToNext;
+            lvl++;
+        }
+
+        PlayerPrefs.SetInt("FameXP", xp);
+        PlayerPrefs.SetInt("FameLevel", lvl);
+        PlayerPrefs.Save();
+        Debug.Log($"рџЋ‰ РџРѕР±РµРґР°! Р”РѕР±Р°РІР»РµРЅРѕ 10 XP. РўРµРїРµСЂСЊ {xp}/{xpToNext}, СѓСЂРѕРІРµРЅСЊ {lvl}");
 
         int nextLevel = Mathf.Clamp(levelNumber + 1, 1, maxLevels);
         PlayerPrefs.SetInt("currentLevel", nextLevel);
@@ -74,22 +86,20 @@ public class GameManager : MonoBehaviour
 
         if (winScreen != null) winScreen.SetActive(true);
         Time.timeScale = 0f;
-        Debug.Log("XP добавлен!");
     }
 
     public void BaseDestroyed()
     {
         if (isGameOver || !roundStarted) return;
         isGameOver = true;
-        Debug.Log("GameManager: BaseDestroyed");
         if (loseScreen != null) loseScreen.SetActive(true);
         Time.timeScale = 0f;
     }
 
-    // кнопка "В меню" в Win/Lose (если есть)
     public void ReturnToMenu()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
     }
 }
+
