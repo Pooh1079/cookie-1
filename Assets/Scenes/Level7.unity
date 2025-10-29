@@ -3556,7 +3556,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roundStarted: 0
   startButton: {fileID: 1150592270}
-  levelNumber: 3
+  levelNumber: 7
   maxLevels: 10
   zombiesToKill: 2
   winScreen: {fileID: 121083714}

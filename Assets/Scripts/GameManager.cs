@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿
+
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -11,7 +13,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Level")]
     public int levelNumber = 1;
-    public int maxLevels = 3;
+    public int maxLevels = 10; // можно изменить в инспекторе
 
     [Header("Win/Lose")]
     public int zombiesToKill = 10;
@@ -21,8 +23,13 @@ public class GameManager : MonoBehaviour
     public GameObject winScreen;
     public GameObject loseScreen;
 
-    [Header("Деньги игрока")]
-    public int money = 200;
+    [Header("Debug: показывать награду (опционально)")]
+    public UnityEngine.UI.Text gemRewardText;
+
+    // 💰 --- Возвращаем деньги для строительства ---
+    [Header("Money System (для строительства)")]
+    public int money = 100; // стартовое значение
+    public UnityEngine.UI.Text moneyText;
 
     void Awake()
     {
@@ -40,6 +47,9 @@ public class GameManager : MonoBehaviour
         if (startButton) startButton.SetActive(true);
         if (winScreen) winScreen.SetActive(false);
         if (loseScreen) loseScreen.SetActive(false);
+        if (gemRewardText) gemRewardText.gameObject.SetActive(false);
+
+        UpdateMoneyUI();
     }
 
     public void StartRound()
@@ -62,10 +72,9 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return;
         isGameOver = true;
 
-        // 🎖 Добавляем XP за победу через PlayerPrefs
+        // XP (как было)
         int xp = PlayerPrefs.GetInt("FameXP", 0);
         int lvl = PlayerPrefs.GetInt("FameLevel", 1);
-
         int xpToNext = lvl == 1 ? 30 : (lvl == 2 ? 40 : 50);
 
         xp += 10;
@@ -78,11 +87,34 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt("FameXP", xp);
         PlayerPrefs.SetInt("FameLevel", lvl);
         PlayerPrefs.Save();
-        Debug.Log($"🎉 Победа! Добавлено 10 XP. Теперь {xp}/{xpToNext}, уровень {lvl}");
+        Debug.Log($"🎉 Победа! +10 XP. Теперь {xp}/{xpToNext}, уровень {lvl}");
 
-        int nextLevel = Mathf.Clamp(levelNumber + 1, 1, maxLevels);
+        // --- ДОБАВЛЯЕМ 50 МОНЕТ (CoinManager) ---
+        if (CoinManager.Instance != null)
+        {
+            CoinManager.Instance.AddCoins(50);
+
+            if (gemRewardText != null)
+            {
+                gemRewardText.gameObject.SetActive(true);
+                gemRewardText.text = "+50";
+            }
+        }
+        else
+        {
+            int current = PlayerPrefs.GetInt(CoinManager.CoinsKey, 0);
+            current += 50;
+            PlayerPrefs.SetInt(CoinManager.CoinsKey, current);
+            PlayerPrefs.Save();
+            Debug.Log("CoinManager not found — монеты сохранены напрямую в PlayerPrefs.");
+        }
+
+        // --- Сохраняем прогресс ---
+        int nextLevel = levelNumber + 1;
+        if (nextLevel > maxLevels) nextLevel = maxLevels;
         PlayerPrefs.SetInt("currentLevel", nextLevel);
         PlayerPrefs.Save();
+        Debug.Log("Next level saved: " + nextLevel);
 
         if (winScreen != null) winScreen.SetActive(true);
         Time.timeScale = 0f;
@@ -100,6 +132,30 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
+    }
+
+    // 💰 --- Методы для системы строительства ---
+    public void AddMoney(int amount)
+    {
+        money += amount;
+        UpdateMoneyUI();
+    }
+
+    public bool SpendMoney(int amount)
+    {
+        if (money >= amount)
+        {
+            money -= amount;
+            UpdateMoneyUI();
+            return true;
+        }
+        return false;
+    }
+
+    private void UpdateMoneyUI()
+    {
+        if (moneyText != null)
+            moneyText.text = money.ToString();
     }
 }
 
