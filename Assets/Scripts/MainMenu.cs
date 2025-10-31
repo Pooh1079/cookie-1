@@ -1,52 +1,59 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using TMPro;
 
 public class MainMenu : MonoBehaviour
 {
-    [Header("UI для отображения монет в меню (опционально):")]
-    public TMP_Text coinsTMP; // если используешь TextMeshPro в меню
-    public Text coinsUIText;  // если используешь обычный UI Text в меню
-
+    // При старте инициализируем currentLevel, если его нет
     void Start()
     {
-        // Подписываемся на событие изменения монет, если CoinManager есть
-        if (CoinManager.Instance != null)
+        // Устанавливаем default 1, если ключа нет
+        if (!PlayerPrefs.HasKey("currentLevel"))
         {
-            CoinManager.Instance.OnCoinsChanged += UpdateCoinsUI;
-            // сразу обновим
-            UpdateCoinsUI(CoinManager.Instance.GetCoins());
+            PlayerPrefs.SetInt("currentLevel", 1);
+            PlayerPrefs.Save();
+            Debug.Log("MainMenu: currentLevel не найден — установлен в 1");
         }
         else
         {
-            // Если CoinManager ещё не создан, прочитаем из PlayerPrefs и покажем
-            int saved = PlayerPrefs.GetInt(CoinManager.CoinsKey, 0);
-            UpdateCoinsUI(saved);
+            Debug.Log("MainMenu: currentLevel = " + PlayerPrefs.GetInt("currentLevel"));
         }
-    }
 
-    void OnDestroy()
-    {
+        // Переподключаем CoinManager UI, если он есть
         if (CoinManager.Instance != null)
-            CoinManager.Instance.OnCoinsChanged -= UpdateCoinsUI;
-    }
+            CoinManager.Instance.ReconnectUI();
 
-    void UpdateCoinsUI(int amount)
-    {
-        if (coinsTMP != null) coinsTMP.text = amount.ToString();
-        if (coinsUIText != null) coinsUIText.text = amount.ToString();
+        // Обновляем menu UI (если есть менеджер)
+        MenuUIManager menuUI = FindObjectOfType<MenuUIManager>();
+        if (menuUI != null) menuUI.RefreshMenuData();
     }
 
     public void PlayGame()
     {
         int currentLevel = PlayerPrefs.GetInt("currentLevel", 1);
+
+        // защита от кривых значений
         if (currentLevel < 1) currentLevel = 1;
         if (currentLevel > 10) currentLevel = 10;
 
-        string levelName = "Level" + currentLevel;
-        Debug.Log("MainMenu: loading " + levelName);
-        SceneManager.LoadScene(levelName);
+        string sceneName = "Level" + currentLevel;
+        Debug.Log("MainMenu: PlayGame -> loading " + sceneName + " (currentLevel=" + currentLevel + ")");
+
+        SceneManager.LoadScene(sceneName);
+    }
+
+    // Кнопка для сброса (можно привязать на кнопку в UI для теста)
+    public void ResetProgress()
+    {
+        PlayerPrefs.SetInt("currentLevel", 1);
+        PlayerPrefs.SetInt("PlayerCoins", 0);
+        PlayerPrefs.SetInt("FameXP", 0);
+        PlayerPrefs.SetInt("FameLevel", 1);
+        PlayerPrefs.Save();
+        Debug.Log("MainMenu: прогресс сброшен (currentLevel=1, coins=0, fame reset)");
+        // обновляем меню UI
+        MenuUIManager menuUI = FindObjectOfType<MenuUIManager>();
+        if (menuUI != null) menuUI.RefreshMenuData();
+        if (CoinManager.Instance != null) CoinManager.Instance.ReconnectUI();
     }
 
     public void QuitGame()
@@ -54,4 +61,3 @@ public class MainMenu : MonoBehaviour
         Application.Quit();
     }
 }
-
