@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,9 +15,11 @@ public class GameManager : MonoBehaviour
     public int maxLevels = 10;
 
     [Header("Win/Lose")]
-    public int zombiesToKill = 10;
+    private int zombiesAlive = 0;
     private int zombiesKilled = 0;
     private bool isGameOver = false;
+    private bool baseDestroyed = false;
+    private bool allZombiesSpawned = false;
 
     public GameObject winScreen;
     public GameObject loseScreen;
@@ -25,7 +28,7 @@ public class GameManager : MonoBehaviour
     public UnityEngine.UI.Text gemRewardText;
 
     [Header("Money System (для строительства)")]
-    public int money = 100; // стартовое значение
+    public int money = 100;
     public UnityEngine.UI.Text moneyText;
 
     void Awake()
@@ -39,7 +42,17 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         roundStarted = false;
         isGameOver = false;
+        baseDestroyed = false;
         zombiesKilled = 0;
+        zombiesAlive = 0;
+        allZombiesSpawned = false;
+
+        // Автоматически определяем номер уровня из имени сцены
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName.StartsWith("Level") && int.TryParse(sceneName.Substring(5), out int levelNum))
+        {
+            levelNumber = levelNum;
+        }
 
         if (startButton) startButton.SetActive(true);
         if (winScreen) winScreen.SetActive(false);
@@ -47,21 +60,50 @@ public class GameManager : MonoBehaviour
         if (gemRewardText) gemRewardText.gameObject.SetActive(false);
 
         UpdateMoneyUI();
+
+        // Запускаем проверку завершения спавна
+        StartCoroutine(CheckSpawningComplete());
     }
 
-    public void StartRound()
+    public void ZombieSpawned()
     {
-        if (roundStarted || isGameOver) return;
-        roundStarted = true;
-        if (startButton) startButton.SetActive(false);
+        zombiesAlive++;
+        Debug.Log($"Zombie spawned! Total alive: {zombiesAlive}");
     }
 
     public void ZombieKilled()
     {
         if (isGameOver || !roundStarted) return;
+
         zombiesKilled++;
-        if (zombiesKilled >= zombiesToKill)
+        zombiesAlive--;
+
+        Debug.Log($"Zombies: {zombiesKilled} killed, {zombiesAlive} alive");
+
+        // Проверяем условия победы только если все зомби заспавнены
+        if (allZombiesSpawned)
+            CheckWinCondition();
+    }
+
+    IEnumerator CheckSpawningComplete()
+    {
+        // Ждем достаточно времени для спавна всех зомби (30 секунд)
+        yield return new WaitForSeconds(30f);
+
+        allZombiesSpawned = true;
+        Debug.Log("All zombies should be spawned now. Starting win condition checks.");
+
+        // Проверяем сразу на случай если все зомби уже убиты
+        CheckWinCondition();
+    }
+
+    private void CheckWinCondition()
+    {
+        // Победа если: все зомби заспавнены И убиты И база не разрушена И раунд начат
+        if (allZombiesSpawned && zombiesAlive <= 0 && !baseDestroyed && roundStarted && !isGameOver)
+        {
             WinGame();
+        }
     }
 
     void WinGame()
@@ -107,10 +149,15 @@ public class GameManager : MonoBehaviour
         }
 
         // 🟢 Сохраняем прогресс (следующий уровень)
-        int nextLevel = levelNumber + 1;
-        if (nextLevel > maxLevels) nextLevel = maxLevels;
-        PlayerPrefs.SetInt("currentLevel", nextLevel);
-        PlayerPrefs.Save();
+        int savedLevel = PlayerPrefs.GetInt("currentLevel", 1);
+        if (levelNumber >= savedLevel)
+        {
+            int nextLevel = levelNumber + 1;
+            if (nextLevel > maxLevels) nextLevel = maxLevels;
+            PlayerPrefs.SetInt("currentLevel", nextLevel);
+            PlayerPrefs.Save();
+            Debug.Log($"💾 Прогресс сохранен: уровень {nextLevel}");
+        }
 
         if (winScreen != null) winScreen.SetActive(true);
         Time.timeScale = 0f;
@@ -119,9 +166,21 @@ public class GameManager : MonoBehaviour
     public void BaseDestroyed()
     {
         if (isGameOver || !roundStarted) return;
+        baseDestroyed = true;
         isGameOver = true;
         if (loseScreen != null) loseScreen.SetActive(true);
         Time.timeScale = 0f;
+    }
+
+    public void StartRound()
+    {
+        if (roundStarted || isGameOver) return;
+        roundStarted = true;
+        if (startButton) startButton.SetActive(false);
+
+        // Проверяем условия победы после старта раунда
+        if (allZombiesSpawned)
+            CheckWinCondition();
     }
 
     public void ReturnToMenu()
@@ -166,5 +225,14 @@ public class GameManager : MonoBehaviour
         if (moneyText != null)
             moneyText.text = money.ToString();
     }
-}
 
+    // Метод для отладки - показывает текущее состояние
+    void Update()
+    {
+        // Для отладки можно добавить отображение количества зомби
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            Debug.Log($"Debug: Zombies - Killed: {zombiesKilled}, Alive: {zombiesAlive}, AllSpawned: {allZombiesSpawned}");
+        }
+    }
+}

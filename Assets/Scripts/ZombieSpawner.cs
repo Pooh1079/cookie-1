@@ -5,15 +5,15 @@ using UnityEngine;
 [System.Serializable]
 public class ZombieWave
 {
-    public GameObject zombiePrefab; // какой префаб зомби
-    public int count = 1;           // сколько заспавнить
-    public float delay = 1f;        // задержка между спавном
+    public GameObject zombiePrefab;
+    public int count = 1;
+    public float delay = 1f;
 }
 
 public class ZombieSpawner : MonoBehaviour
 {
-    public List<ZombieWave> waves = new List<ZombieWave>(); // список волн
-    public float startDelay = 2f; // задержка перед началом спавна
+    public List<ZombieWave> waves = new List<ZombieWave>();
+    public float startDelay = 2f;
 
     void Start()
     {
@@ -37,5 +37,9 @@ public class ZombieSpawner : MonoBehaviour
     void SpawnZombie(GameObject prefab)
     {
         Instantiate(prefab, transform.position, Quaternion.identity);
+
+        // Сообщаем GameManager о новом зомби
+        if (GameManager.instance != null)
+            GameManager.instance.ZombieSpawned();
     }
 }

@@ -13,7 +13,6 @@ public class ZombieAI : MonoBehaviour
 
     void Start()
     {
-        // возможно база ещЄ не создана Ч будем искать в Update, но пробуем найти сейчас
         FindBase();
     }
 
@@ -97,4 +96,12 @@ public class ZombieAI : MonoBehaviour
             baseHealth = b.GetComponent<BaseHealth>();
         }
     }
+
+    // ?? ƒќЅј¬»“№ Ё“ќ“ ћ≈“ќƒ дл€ корректного уничтожени€
+    void OnDestroy()
+    {
+        // ќстанавливаем атаку при уничтожении зомби
+        CancelInvoke(nameof(AttackBase));
+    }
+
 }
